@@ -252,11 +252,8 @@ function UpdateTodo({
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button h="1.5rem" size="sm" mr={3} onClick={handleUpdate}>
+            <Button h="1.5rem" size="sm" onClick={handleUpdate}>
               Edit
-            </Button>
-            <Button h="1.5rem" size="sm" mr={3} onClick={onClose}>
-              Cancel
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -292,11 +289,8 @@ function DeleteTodo({ id }: { id: string }): React.ReactElement {
           </ModalBody>
 
           <ModalFooter>
-            <Button h="1.5rem" size="sm" mr={3} onClick={handleDelete}>
+            <Button h="1.5rem" size="sm" onClick={handleDelete}>
               Delete
-            </Button>
-            <Button h="1.5rem" size="sm" mr={3} onClick={onClose}>
-              Cancel
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -395,11 +389,8 @@ function AddTodo(): React.ReactElement {
           </ModalBody>
 
           <ModalFooter>
-            <Button h="1.5rem" size="sm" mr={3} onClick={handleSubmit}>
+            <Button h="1.5rem" size="sm" onClick={handleSubmit}>
               Create new task
-            </Button>
-            <Button h="1.5rem" size="sm" mr={3} onClick={onClose}>
-              Cancel
             </Button>
           </ModalFooter>
         </ModalContent>
