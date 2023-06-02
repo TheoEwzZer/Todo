@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { ChakraProvider } from "@chakra-ui/react";
 
 import Header from "./components/Header.tsx";
@@ -15,4 +15,6 @@ function App() {
 }
 
 const rootElement = document.getElementById("root");
-render(<App />, rootElement);
+if (rootElement) {
+  createRoot(rootElement).render(<App />);
+}
