@@ -256,7 +256,7 @@ function Login(): React.ReactElement {
       <Modal isOpen={isOpen} onClose={close}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Sign Up</ModalHeader>
+          <ModalHeader>Sign In</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Flex direction={"column"}>
@@ -294,7 +294,7 @@ function Login(): React.ReactElement {
           </ModalBody>
           <ModalFooter>
             <Button h="1.5rem" size="sm" onClick={handleSubmit}>
-              Sign Up
+              Sign In
             </Button>
           </ModalFooter>
           {errorMessage && (
