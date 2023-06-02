@@ -161,16 +161,19 @@ function UpdateTodo({
   title,
   description,
   status,
+  due_time,
 }: {
   id: string;
   title: string;
   description: string;
   status: string;
+  due_time: string;
 }): React.ReactElement {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newTitle, setNewTitle] = useState(title);
   const [newDescription, setNewDescription] = useState(description);
   const [newStatus, setNewStatus] = useState(status);
+  const [newDueTime, setNewDueTime] = useState(due_time);
   const { fetchTodos } = React.useContext(TodosContext);
 
   const handleUpdate: () => Promise<void> = async (): Promise<void> => {
@@ -185,6 +188,7 @@ function UpdateTodo({
         title: newTitle,
         description: newDescription,
         status: newStatus,
+        due_time: newDueTime,
       }),
     });
     onClose();
@@ -235,6 +239,16 @@ function UpdateTodo({
                 <option value="in progress">In Progress</option>
                 <option value="done">Done</option>
               </Select>
+              <Input
+                mb={2}
+                type="datetime-local"
+                placeholder="Due date"
+                aria-label="Due date"
+                value={newDueTime}
+                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                  setNewDueTime(event.target.value)
+                }
+              />
             </Flex>
           </ModalBody>
           <ModalFooter>
@@ -291,24 +305,24 @@ function DeleteTodo({ id }: { id: string }): React.ReactElement {
   );
 }
 
-function AddTodo() {
+function AddTodo(): React.ReactElement {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("not started");
+  const [dueTime, setDueTime] = useState("");
   const { todos, fetchTodos } = React.useContext(TodosContext);
 
   const newTodo = {
-    id: (todos.length + 1).toString(),
     title: title,
     description: description,
     created_at: new Date().toISOString().slice(0, 19).replace("T", " "),
-    due_time: new Date().toISOString().slice(0, 19).replace("T", " "),
+    due_time: dueTime,
     status: status,
   };
 
   const handleSubmit: () => Promise<void> = async (): Promise<void> => {
-    if (!title || !description || !status) {
+    if (!title || !description || !status || !dueTime) {
       return;
     }
     await fetch(`http://localhost:8000/todos`, {
@@ -367,6 +381,16 @@ function AddTodo() {
                 <option value="in progress">In Progress</option>
                 <option value="done">Done</option>
               </Select>
+              <Input
+                mb={2}
+                type="datetime-local"
+                placeholder="Due date"
+                aria-label="Due date"
+                value={dueTime}
+                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                  setDueTime(event.target.value)
+                }
+              />
             </Flex>
           </ModalBody>
 
