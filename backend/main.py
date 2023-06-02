@@ -1,3 +1,7 @@
+"""
+This module contains the main function to run the backend server for the Todo app.
+"""
+
 import uvicorn
 
 if __name__ == "__main__":

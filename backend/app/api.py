@@ -1,41 +1,50 @@
-from datetime import datetime
-from fastapi import Depends, FastAPI, HTTPException, Header
-from fastapi.middleware.cors import CORSMiddleware
-from mysql.connector.connection import MySQLConnection
-from mysql.connector.cursor import MySQLCursor
-from mysql.connector.pooling import PooledMySQLConnection
-from typing import Any, Dict, List, Optional, Tuple
-import mysql.connector
+"""
+This file contains the API endpoints for the todo list application.
+"""
 
-from app.auth.auth import encodeJWT, decodeJWT, get_email_from_token
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+from app.auth.auth import decode_jwt, encode_jwt, get_email_from_token
+from app.config.db import get_db
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from mysql.connector.cursor import MySQLCursor
 
 app = FastAPI()
 
-origins: list[str] = ["http://localhost:3000", "localhost:3000"]
+ORIGINS: list[str] = ["http://localhost:3000", "localhost:3000"]
 
 app.add_middleware(
     middleware_class=CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=ORIGINS,
     allow_credentials=True,
     allow_methods=["DELETE", "POST", "GET", "PUT"],
     allow_headers=["*"],
 )
 
-db: PooledMySQLConnection | MySQLConnection | Any = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root",
-    database="todo"
-)
+db = get_db()
 
 
 @app.get(path="/", tags=["root"])
 async def read_root() -> Dict[str, str]:
+    """
+    Returns a dictionary with a welcome message for the todo list application.
+
+    Return:
+        Dict[str, str]: A dictionary with a welcome message.
+    """
     return {"message": "Welcome to your todo list."}
 
 
-@app.get(path="/todos", tags=["todos"], status_code=200, dependencies=[Depends(dependency=decodeJWT)])
+@app.get(path="/todos", tags=["todos"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
 async def view_all_todos() -> List[Dict[str, str]]:
+    """
+    View all the todos
+
+    Returns:
+        List[Dict[str, str]]: A list of dictionaries containing the todos.
+    """
     cursor: MySQLCursor = db.cursor()
     query = "SELECT * FROM todo"
     cursor.execute(query)
@@ -57,8 +66,17 @@ async def view_all_todos() -> List[Dict[str, str]]:
     return todos
 
 
-@app.post(path="/todos", tags=["todos"], status_code=201, dependencies=[Depends(dependency=decodeJWT)])
+@app.post(path="/todos", tags=["todos"], status_code=201, dependencies=[Depends(dependency=decode_jwt)])
 async def create_todo(todo: Dict[str, str]) -> Dict[str, str]:
+    """
+    Creates a todo
+
+    Args:
+        todo (Dict[str, str]): A dictionary containing the information for the new todo.
+
+    Returns:
+        Dict[str, str]: A dictionary containing the information for the newly created todo.
+    """
     cursor: MySQLCursor = db.cursor()
     query = "INSERT INTO todo (title, description, created_at, due_time, status, user_id) VALUES (%s, %s, %s, %s, %s, %s)"
     values: Tuple[str, str, str, str, str, str] = (
@@ -82,8 +100,18 @@ async def create_todo(todo: Dict[str, str]) -> Dict[str, str]:
     }
 
 
-@app.put(path="/todos/{id}", tags=["todos"], status_code=200, dependencies=[Depends(dependency=decodeJWT)])
-async def update_todo(id: str, body: dict) -> Dict[str, str]:
+@app.put(path="/todos/{id}", tags=["todos"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
+async def update_todo(id: str, body: Dict) -> Dict[str, str]:
+    """
+    Update a todo
+
+    Args:
+        id (str): A string representing the id of the todo to update.
+        bod (Dict): A dictionary containing the updated information for the todo.
+
+    Returns:
+        Dict[str, str]:A dictionary containing the updated information for the todo.
+    """
     try:
         int(id)
     except ValueError as e:
@@ -114,8 +142,17 @@ async def update_todo(id: str, body: dict) -> Dict[str, str]:
     }
 
 
-@app.delete(path="/todos/{id}", tags=["todos"], status_code=200, dependencies=[Depends(dependency=decodeJWT)])
+@app.delete(path="/todos/{id}", tags=["todos"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
 async def delete_todo(id: str) -> Dict[str, str]:
+    """
+    Delete a todo
+
+    Args:
+        id (str): A string representing the id of the todo to delete.
+
+    Returns:
+        Dict[str, str]: A dictionary containing a message indicating that the todo was successfully deleted.
+    """
     try:
         int(id)
     except ValueError as e:
@@ -132,8 +169,14 @@ async def delete_todo(id: str) -> Dict[str, str]:
     return {"msg": f"Successfully deleted record number : {id}"}
 
 
-@app.get(path="/user", tags=["users"], status_code=200, dependencies=[Depends(dependency=decodeJWT)])
+@app.get(path="/user", tags=["users"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
 async def view_all_users() -> List[Dict[str, str]]:
+    """
+    View all user information
+
+    Returns:
+        List[Dict[str, str]]: A list of dictionaries containing information about each user.
+    """
     cursor: MySQLCursor = db.cursor()
     query = "SELECT * FROM user"
     cursor.execute(query)
@@ -156,6 +199,18 @@ async def view_all_users() -> List[Dict[str, str]]:
 
 @app.get(path="/user/id", tags=["users"], status_code=200)
 async def view_user_id(email: Optional[str] = Depends(dependency=get_email_from_token)) -> str:
+    """
+    View user ID
+
+    Args:
+        email (Optional[str]): Optional email address of the user.
+
+    Raises:
+        HTTPException: If the user is not found.
+
+    Returns:
+        str: A string representing the user ID.
+    """
     cursor: MySQLCursor = db.cursor()
     query = "SELECT id FROM user WHERE email = %s"
     cursor.execute(query, (email,))
@@ -168,6 +223,18 @@ async def view_user_id(email: Optional[str] = Depends(dependency=get_email_from_
 
 @app.get(path="/user/todos", tags=["users"], status_code=200)
 async def view_all_user_todos(email: Optional[str] = Depends(dependency=get_email_from_token)) -> List[Dict[str, str]]:
+    """
+    View all user todos
+
+    Args:
+        email (Optional[str]): Optional email address of the user.
+
+    Raises:
+        HTTPException: If the user is not found.
+
+    Returns:
+        List[Dict[str, str]]: A list of dictionaries representing the todos for the user.
+    """
     cursor: MySQLCursor = db.cursor()
     query = "SELECT id FROM user WHERE email = %s"
     cursor.execute(query, (email,))
@@ -195,8 +262,21 @@ async def view_all_user_todos(email: Optional[str] = Depends(dependency=get_emai
     return todos
 
 
-@app.put(path="/users/{id}", tags=["users"], status_code=200, dependencies=[Depends(dependency=decodeJWT)])
-async def update_user(id: str, body: dict) -> Dict[str, str]:
+@app.put(path="/users/{id}", tags=["users"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
+async def update_user(id: str, body: Dict) -> Dict[str, str]:
+    """
+    Update user information
+
+    Args:
+        id (str): The ID of the user to update.
+        body (Dict): A dictionary containing the updated user information.
+
+    Raises:
+        HTTPException: If the ID is not an integer or if the user is not found.
+
+    Returns:
+        Dict[str, str]: A dictionary containing the updated user information.
+    """
     try:
         int(id)
     except ValueError as e:
@@ -227,6 +307,18 @@ async def update_user(id: str, body: dict) -> Dict[str, str]:
 
 @app.post(path="/register", tags=["users"], status_code=201)
 async def register_user(user: Dict[str, str]) -> Dict[str, str]:
+    """
+    Register a new user
+
+    Args:
+        user (Dict[str, str]): A dictionary containing the user information.
+
+    Raises:
+        HTTPException: If the user already exists.
+
+    Returns:
+        Dict[str, str]: A dictionary containing the encoded JWT token.
+    """
     cursor: MySQLCursor = db.cursor()
     query = "SELECT * FROM user WHERE email = %s"
     cursor.execute(query, (user["email"],))
@@ -244,11 +336,23 @@ async def register_user(user: Dict[str, str]) -> Dict[str, str]:
     result: Any | Tuple[str] | None = cursor.fetchone()
     if result is None:
         raise HTTPException(status_code=404, detail="Not Found")
-    return encodeJWT(email=user["email"])
+    return encode_jwt(email=user["email"])
 
 
 @app.post(path="/login", tags=["users"], status_code=200)
 async def login_user(user: Dict[str, str]) -> Dict[str, str]:
+    """
+    Connect a user
+
+    Args:
+        user (Dict[str, str]): A dictionary containing the user's email and password.
+
+    Raises:
+        HTTPException: If the email and password combination is invalid.
+
+    Returns:
+        Dict[str, str]: A dictionary containing the encoded JWT token.
+    """
     cursor: MySQLCursor = db.cursor()
     query = "SELECT * FROM user WHERE email = %s AND password = %s"
     values: Tuple[str, str] = (user["email"], user["password"])
@@ -256,11 +360,23 @@ async def login_user(user: Dict[str, str]) -> Dict[str, str]:
     result: Any | Tuple[str] | None = cursor.fetchone()
     if result is None:
         raise HTTPException(status_code=404, detail="Invalid Credentials")
-    return encodeJWT(email=user["email"])
+    return encode_jwt(email=user["email"])
 
 
-@app.delete(path="/users/{id}", tags=["users"], status_code=200, dependencies=[Depends(dependency=decodeJWT)])
+@app.delete(path="/users/{id}", tags=["users"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
 async def delete_user(id: str) -> Dict[str, str]:
+    """
+    Delete a user
+
+    Args:
+        id (str): The ID of the user to delete.
+
+    Raises:
+        HTTPException: If the ID is not a valid integer or if the user is not found.
+
+    Returns:
+        Dict[str, str]: A dictionary containing a success message.
+    """
     try:
         int(id)
     except ValueError as e:
@@ -277,6 +393,12 @@ async def delete_user(id: str) -> Dict[str, str]:
     return {"msg": f"Successfully deleted record number : {id}"}
 
 
-@app.get(path="/check_token", tags=["users"], status_code=200, dependencies=[Depends(dependency=decodeJWT)])
+@app.get(path="/check_token", tags=["users"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
 async def check_token() -> Dict[str, str]:
+    """
+    Check if the token is valid.
+
+    Returns:
+        Dict[str, str]: A dictionary containing a success message.
+    """
     return {"msg": "Token is valid"}
