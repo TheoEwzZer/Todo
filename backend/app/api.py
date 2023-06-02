@@ -154,6 +154,18 @@ async def view_all_users() -> List[Dict[str, str]]:
     return users
 
 
+@app.get(path="/user/id", tags=["users"], status_code=200)
+async def view_user_id(email: Optional[str] = Depends(dependency=get_email_from_token)) -> str:
+    cursor: MySQLCursor = db.cursor()
+    query = "SELECT id FROM user WHERE email = %s"
+    cursor.execute(query, (email,))
+    result: Any | Tuple[str] | None = cursor.fetchone()
+    if result is None:
+        raise HTTPException(status_code=404, detail="Not Found")
+    user_id: str = str(object=result[0])
+    return user_id
+
+
 @app.get(path="/user/todos", tags=["users"], status_code=200)
 async def view_all_user_todos(email: Optional[str] = Depends(dependency=get_email_from_token)) -> List[Dict[str, str]]:
     cursor: MySQLCursor = db.cursor()
