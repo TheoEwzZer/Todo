@@ -58,8 +58,17 @@ export default function Todos(): React.ReactElement {
   const [sortColumn, setSortColumn] = useState<string>("id");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const fetchTodos: () => Promise<void> = async (): Promise<void> => {
-    const response = await fetch("http://localhost:8000/todos");
+    const token: string | null = localStorage.getItem("jwtToken");
+    if (!token) {
+      return;
+    }
+    const response = await fetch("http://localhost:8000/user/todos", {
+      headers: { token: token },
+    });
     const todos: React.SetStateAction<never[]> = await response.json();
+    if (response.status !== 200) {
+      return;
+    }
     setTodos(todos);
   };
 
@@ -89,6 +98,17 @@ export default function Todos(): React.ReactElement {
   useEffect((): void => {
     fetchTodos();
   }, []);
+  if (!localStorage.getItem("jwtToken")) {
+    return (
+      <Flex justifyContent="center" alignItems="center" height="50vh">
+        <Box textAlign="center">
+          <Text fontSize="4xl" fontWeight="bold">
+            Sign In to use Todos
+          </Text>
+        </Box>
+      </Flex>
+    );
+  }
   return (
     <TodosContext.Provider value={{ todos, fetchTodos }}>
       <AddTodo />
@@ -175,6 +195,9 @@ function UpdateTodo({
   const [newStatus, setNewStatus] = useState(status);
   const [newDueTime, setNewDueTime] = useState(due_time);
   const { fetchTodos } = React.useContext(TodosContext);
+  if (!localStorage.getItem("jwtToken")) {
+    return <></>;
+  }
 
   const handleUpdate: () => Promise<void> = async (): Promise<void> => {
     if (!newTitle || !newDescription || !newStatus) {
@@ -265,6 +288,9 @@ function UpdateTodo({
 function DeleteTodo({ id }: { id: string }): React.ReactElement {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { fetchTodos } = React.useContext(TodosContext);
+  if (!localStorage.getItem("jwtToken")) {
+    return <></>;
+  }
   const handleDelete: () => Promise<void> = async (): Promise<void> => {
     await fetch(`http://localhost:8000/todos/${id}`, {
       method: "DELETE",
@@ -305,14 +331,17 @@ function AddTodo(): React.ReactElement {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("not started");
   const [dueTime, setDueTime] = useState("");
-  const { todos, fetchTodos } = React.useContext(TodosContext);
+  const { fetchTodos } = React.useContext(TodosContext);
 
+  if (!localStorage.getItem("jwtToken")) {
+    return <></>;
+  }
   const newTodo = {
     title: title,
     description: description,
-    created_at: new Date().toISOString().slice(0, 19).replace("T", " "),
     due_time: dueTime,
     status: status,
+    user_id: "1", //to change
   };
 
   const handleSubmit: () => Promise<void> = async (): Promise<void> => {
