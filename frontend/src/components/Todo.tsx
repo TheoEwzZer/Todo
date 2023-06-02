@@ -3,7 +3,6 @@ import {
   Button,
   Flex,
   Input,
-  Select,
   Text,
   Table,
   Box,
@@ -21,6 +20,15 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  HStack,
+  Radio,
+  Alert,
+  AlertIcon,
+  AlertDescription,
+  AlertTitle,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 
@@ -195,19 +203,21 @@ function UpdateTodo({
   const [newStatus, setNewStatus] = useState(status);
   const [newDueTime, setNewDueTime] = useState(due_time);
   const { fetchTodos } = React.useContext(TodosContext);
+  const [errorMessage, setErrorMessage] = useState("");
   if (!localStorage.getItem("jwtToken")) {
     return <></>;
   }
 
   const handleUpdate: () => Promise<void> = async (): Promise<void> => {
-    if (!newTitle || !newDescription || !newStatus) {
+    if (!newTitle || !newDueTime || !newStatus) {
+      setErrorMessage("Please fill in all required fields");
       return;
     }
     const token: string | null = localStorage.getItem("jwtToken");
     if (!token) {
       return;
     }
-    await fetch(`http://localhost:8000/todos/${id}`, {
+    const response = await fetch(`http://localhost:8000/todos/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", token: token },
       body: JSON.stringify({
@@ -218,8 +228,22 @@ function UpdateTodo({
         due_time: newDueTime,
       }),
     });
+    if (response.status !== 200) {
+      const data: any = await response.json();
+      setErrorMessage(data.message);
+      setNewTitle(title);
+      setNewDescription(description);
+      setNewStatus(status);
+      setNewDueTime(due_time);
+      return;
+    }
     onClose();
     fetchTodos();
+  };
+
+  const close: () => void = (): void => {
+    onClose();
+    setErrorMessage("");
   };
 
   return (
@@ -234,48 +258,56 @@ function UpdateTodo({
           <ModalCloseButton />
           <ModalBody>
             <Flex direction="column">
-              <Input
-                mb={2}
-                type="text"
-                placeholder="Title"
-                aria-label="Title"
-                value={newTitle}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setNewTitle(event.target.value)
-                }
-              />
-              <Input
-                mb={2}
-                type="text"
-                placeholder="Description"
-                aria-label="Description"
-                value={newDescription}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setNewDescription(event.target.value)
-                }
-              />
-              <Select
-                mb={2}
-                value={newStatus}
-                onChange={(event: ChangeEvent<HTMLSelectElement>): void =>
-                  setNewStatus(event.target.value)
-                }
-              >
-                <option value="not started">Not Started</option>
-                <option value="todo">Todo</option>
-                <option value="in progress">In Progress</option>
-                <option value="done">Done</option>
-              </Select>
-              <Input
-                mb={2}
-                type="datetime-local"
-                placeholder="Due date"
-                aria-label="Due date"
-                value={newDueTime}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setNewDueTime(event.target.value)
-                }
-              />
+              <FormControl mb={2} isRequired>
+                <FormLabel>Title</FormLabel>
+                <Input
+                  type="text"
+                  aria-label="Title"
+                  value={newTitle}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setNewTitle(event.target.value)
+                  }
+                />
+              </FormControl>
+              <FormControl mb={2}>
+                <FormLabel>Description</FormLabel>
+                <Input
+                  type="text"
+                  aria-label="Description"
+                  value={newDescription}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setNewDescription(event.target.value)
+                  }
+                />
+              </FormControl>
+              <FormControl mb={2} isRequired>
+                <FormLabel>Status</FormLabel>
+                <RadioGroup
+                  defaultValue="not started"
+                  mb={2}
+                  value={newStatus}
+                  onChange={(event: string): void => setNewStatus(event)}
+                >
+                  <HStack spacing="24px">
+                    <Radio value="not started">Not Started</Radio>
+                    <Radio value="todo">Todo</Radio>
+                    <Radio value="in progress">In Progress</Radio>
+                    <Radio value="done">Done</Radio>
+                  </HStack>
+                </RadioGroup>
+              </FormControl>
+              <FormControl mb={2} isRequired>
+                <FormLabel>Due Time</FormLabel>
+                <Input
+                  mb={2}
+                  type="datetime-local"
+                  aria-label="Due Time"
+                  value={newDueTime}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setNewDueTime(event.target.value)
+                  }
+                />
+              </FormControl>
             </Flex>
           </ModalBody>
           <ModalFooter>
@@ -283,6 +315,20 @@ function UpdateTodo({
               Edit
             </Button>
           </ModalFooter>
+          {errorMessage && (
+            <Alert
+              status="error"
+              flexDirection="column"
+              borderBottomLeftRadius={5}
+              borderBottomRightRadius={5}
+            >
+              <AlertIcon boxSize="40px" mr={0} />
+              <AlertTitle mt={4} mb={1} fontSize="lg">
+                There was a problem
+              </AlertTitle>
+              <AlertDescription maxWidth="sm">{errorMessage}</AlertDescription>
+            </Alert>
+          )}
         </ModalContent>
       </Modal>
     </>
@@ -336,6 +382,7 @@ function AddTodo(): React.ReactElement {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("not started");
   const [dueTime, setDueTime] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const { fetchTodos } = React.useContext(TodosContext);
 
   if (!localStorage.getItem("jwtToken")) {
@@ -343,7 +390,8 @@ function AddTodo(): React.ReactElement {
   }
 
   const handleSubmit: () => Promise<void> = async (): Promise<void> => {
-    if (!title || !description || !status || !dueTime) {
+    if (!title || !status || !dueTime) {
+      setErrorMessage("Please fill in all required fields");
       return;
     }
 
@@ -361,6 +409,14 @@ function AddTodo(): React.ReactElement {
       headers: { token: token },
     });
     const id: string = await response.json();
+    if (response.status !== 201) {
+      const data: any = await response.json();
+      setErrorMessage(data.detail);
+      setTitle("");
+      setDescription("");
+      setStatus("not started");
+      return;
+    }
 
     const newTodo = {
       title: title,
@@ -382,60 +438,81 @@ function AddTodo(): React.ReactElement {
     setStatus("not started");
   };
 
+  const close: () => void = (): void => {
+    onClose();
+    setTitle("");
+    setDescription("");
+    setStatus("not started");
+    setErrorMessage("");
+  };
+
   return (
     <>
-      <Button colorScheme="green" onClick={onOpen} width={["100%"]}>
+      <Button
+        colorScheme="green"
+        onClick={onOpen}
+        width={["100%"]}
+        borderRadius="0"
+      >
         Create new task
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={close}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Create new task</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Flex direction="column">
-              <Input
-                mb={2}
-                type="text"
-                placeholder="Title"
-                aria-label="Title"
-                value={title}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setTitle(event.target.value)
-                }
-              />
-              <Input
-                mb={2}
-                type="text"
-                placeholder="Description"
-                aria-label="Description"
-                value={description}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setDescription(event.target.value)
-                }
-              />
-              <Select
-                mb={2}
-                value={status}
-                onChange={(event: ChangeEvent<HTMLSelectElement>): void =>
-                  setStatus(event.target.value)
-                }
-              >
-                <option value="not started">Not Started</option>
-                <option value="todo">Todo</option>
-                <option value="in progress">In Progress</option>
-                <option value="done">Done</option>
-              </Select>
-              <Input
-                mb={2}
-                type="datetime-local"
-                placeholder="Due date"
-                aria-label="Due date"
-                value={dueTime}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setDueTime(event.target.value)
-                }
-              />
+              <FormControl mb={2} isRequired>
+                <FormLabel>Title</FormLabel>
+                <Input
+                  type="text"
+                  aria-label="Title"
+                  value={title}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setTitle(event.target.value)
+                  }
+                />
+              </FormControl>
+              <FormControl mb={2}>
+                <FormLabel>Description</FormLabel>
+                <Input
+                  type="text"
+                  aria-label="Description"
+                  value={description}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setDescription(event.target.value)
+                  }
+                />
+              </FormControl>
+              <FormControl mb={2} isRequired>
+                <FormLabel>Status</FormLabel>
+                <RadioGroup
+                  defaultValue="not started"
+                  mb={2}
+                  value={status}
+                  onChange={(event: string): void => setStatus(event)}
+                >
+                  <HStack spacing="24px">
+                    <Radio value="not started">Not Started</Radio>
+                    <Radio value="todo">Todo</Radio>
+                    <Radio value="in progress">In Progress</Radio>
+                    <Radio value="done">Done</Radio>
+                  </HStack>
+                </RadioGroup>
+              </FormControl>
+              <FormControl mb={2} isRequired>
+                <FormLabel>Due Time</FormLabel>
+                <Input
+                  mb={2}
+                  type="datetime-local"
+                  aria-label="Due Time"
+                  value={dueTime}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setDueTime(event.target.value)
+                  }
+                />
+              </FormControl>
             </Flex>
           </ModalBody>
 
@@ -444,6 +521,20 @@ function AddTodo(): React.ReactElement {
               Create new task
             </Button>
           </ModalFooter>
+          {errorMessage && (
+            <Alert
+              status="error"
+              flexDirection="column"
+              borderBottomLeftRadius={5}
+              borderBottomRightRadius={5}
+            >
+              <AlertIcon boxSize="40px" mr={0} />
+              <AlertTitle mt={4} mb={1} fontSize="lg">
+                There was a problem
+              </AlertTitle>
+              <AlertDescription maxWidth="sm">{errorMessage}</AlertDescription>
+            </Alert>
+          )}
         </ModalContent>
       </Modal>
     </>

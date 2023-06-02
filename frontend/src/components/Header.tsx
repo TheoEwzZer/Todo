@@ -16,7 +16,16 @@ import {
   ModalBody,
   Input,
   ModalFooter,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  Icon,
+  FormControl,
+  FormLabel,
+  FormHelperText,
 } from "@chakra-ui/react";
+import { InfoOutlineIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 
 const Header: () => React.JSX.Element = (): React.JSX.Element => (
   <Box>
@@ -48,6 +57,7 @@ function Register(): React.ReactElement {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [firstname, setFirstname] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const newUser = {
     email: email,
@@ -58,6 +68,7 @@ function Register(): React.ReactElement {
 
   const handleSubmit: () => Promise<void> = async (): Promise<void> => {
     if (!email || !password || !name || !firstname) {
+      setErrorMessage("Please fill in all fields.");
       return;
     }
     const response = await fetch(`http://localhost:8000/register`, {
@@ -65,15 +76,13 @@ function Register(): React.ReactElement {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newUser),
     });
+    const data: any = await response.json();
     if (response.status !== 201) {
-      onClose();
+      setErrorMessage(data.detail);
       setEmail("");
       setPassword("");
-      setName("");
-      setFirstname("");
       return;
     }
-    const data: any = await response.json();
     localStorage.setItem("jwtToken", data.token);
     onClose();
     setEmail("");
@@ -83,58 +92,78 @@ function Register(): React.ReactElement {
     window.location.reload();
   };
 
+  const close: () => void = (): void => {
+    onClose();
+    setEmail("");
+    setPassword("");
+    setName("");
+    setFirstname("");
+    setErrorMessage("");
+  };
+
   return (
     <>
       <Button colorScheme="teal" onClick={onOpen}>
         Sign Up
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={close}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Sign Up</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Flex direction={"column"}>
-              <Input
-                mb={2}
-                type="text"
-                placeholder="Name"
-                aria-label="Name"
-                value={name}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setName(event.target.value)
-                }
-              />
-              <Input
-                mb={2}
-                type="text"
-                placeholder="Firstname"
-                aria-label="Firstname"
-                value={firstname}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setFirstname(event.target.value)
-                }
-              />
-              <Input
-                mb={2}
-                type="email"
-                placeholder="Email"
-                aria-label="Email"
-                value={email}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setEmail(event.target.value)
-                }
-              />
-              <Input
-                mb={2}
-                type="password"
-                placeholder="Password"
-                aria-label="Password"
-                value={password}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setPassword(event.target.value)
-                }
-              />
+              <FormControl mb={2} isRequired>
+                <FormLabel>Last Name</FormLabel>
+                <Input
+                  type="text"
+                  aria-label="Last Name"
+                  value={name}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setName(event.target.value)
+                  }
+                />
+              </FormControl>
+              <FormControl mb={2} isRequired>
+                <FormLabel>First Name</FormLabel>
+                <Input
+                  type="text"
+                  aria-label="First Name"
+                  value={firstname}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setFirstname(event.target.value)
+                  }
+                />
+              </FormControl>
+              <FormControl mb={2} isRequired>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  type="email"
+                  aria-label="Email"
+                  value={email}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setEmail(event.target.value)
+                  }
+                />
+              </FormControl>
+              <FormControl mb={2} isRequired>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  type="password"
+                  placeholder="At least 6 characters"
+                  aria-label="Password"
+                  value={password}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setPassword(event.target.value)
+                  }
+                />
+                <Flex alignItems="center" ml={2}>
+                  <Icon mt={2} as={InfoOutlineIcon} color="gray.500" mr={2} />
+                  <FormHelperText>
+                    Passwords must be at least 6 characters.
+                  </FormHelperText>
+                </Flex>
+              </FormControl>
             </Flex>
           </ModalBody>
           <ModalFooter>
@@ -142,6 +171,20 @@ function Register(): React.ReactElement {
               Sign Up
             </Button>
           </ModalFooter>
+          {errorMessage && (
+            <Alert
+              status="error"
+              flexDirection="column"
+              borderBottomLeftRadius={5}
+              borderBottomRightRadius={5}
+            >
+              <AlertIcon boxSize="40px" mr={0} />
+              <AlertTitle mt={4} mb={1} fontSize="lg">
+                There was a problem
+              </AlertTitle>
+              <AlertDescription maxWidth="sm">{errorMessage}</AlertDescription>
+            </Alert>
+          )}
         </ModalContent>
       </Modal>
     </>
@@ -152,6 +195,7 @@ function Login(): React.ReactElement {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const loginUser = {
     email: email,
@@ -160,6 +204,7 @@ function Login(): React.ReactElement {
 
   const handleSubmit: () => Promise<void> = async (): Promise<void> => {
     if (!email || !password) {
+      setErrorMessage("Please fill in all fields.");
       return;
     }
     const response = await fetch(`http://localhost:8000/login`, {
@@ -169,7 +214,7 @@ function Login(): React.ReactElement {
     });
     const data: any = await response.json();
     if (response.status !== 200) {
-      onClose();
+      setErrorMessage(data.detail);
       setEmail("");
       setPassword("");
       return;
@@ -181,38 +226,47 @@ function Login(): React.ReactElement {
     window.location.reload();
   };
 
+  const close: () => void = (): void => {
+    onClose();
+    setEmail("");
+    setPassword("");
+    setErrorMessage("");
+  };
+
   return (
     <>
       <Button colorScheme="teal" onClick={onOpen}>
         Sign In
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={close}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Sign Up</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Flex direction={"column"}>
-              <Input
-                mb={2}
-                type="email"
-                placeholder="Email"
-                aria-label="Email"
-                value={email}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setEmail(event.target.value)
-                }
-              />
-              <Input
-                mb={2}
-                type="password"
-                placeholder="Password"
-                aria-label="Password"
-                value={password}
-                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                  setPassword(event.target.value)
-                }
-              />
+              <FormControl mb={2}>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  type="email"
+                  aria-label="Email"
+                  value={email}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setEmail(event.target.value)
+                  }
+                />
+              </FormControl>
+              <FormControl mb={2}>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  type="password"
+                  aria-label="Password"
+                  value={password}
+                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                    setPassword(event.target.value)
+                  }
+                />
+              </FormControl>
             </Flex>
           </ModalBody>
           <ModalFooter>
@@ -220,6 +274,20 @@ function Login(): React.ReactElement {
               Sign Up
             </Button>
           </ModalFooter>
+          {errorMessage && (
+            <Alert
+              status="error"
+              flexDirection="column"
+              borderBottomLeftRadius={5}
+              borderBottomRightRadius={5}
+            >
+              <AlertIcon boxSize="40px" mr={0} />
+              <AlertTitle mt={4} mb={1} fontSize="lg">
+                There was a problem
+              </AlertTitle>
+              <AlertDescription maxWidth="sm">{errorMessage}</AlertDescription>
+            </Alert>
+          )}
         </ModalContent>
       </Modal>
     </>
@@ -234,7 +302,7 @@ function ClearLocalStorageButton(): React.ReactElement {
 
   return (
     <Button colorScheme="red" onClick={handleClearLocalStorage}>
-      DEV ONLY: Clear localStorage
+      Sign Out
     </Button>
   );
 }
