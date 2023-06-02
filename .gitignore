@@ -1,3 +1,5 @@
+.env
+.sourcery.yaml
+.vscode
 __pycache__
 node_modules
-.vscode
