@@ -5,6 +5,7 @@ This file contains the API endpoints for the todo list application.
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+import bcrypt
 from app.auth.auth import decode_jwt, encode_jwt, get_email_from_token
 from app.config.db import get_db
 from fastapi import Depends, FastAPI, HTTPException
@@ -327,8 +328,12 @@ async def register_user(user: Dict[str, str]) -> Dict[str, str]:
     result: Any | Tuple[str] | None = cursor.fetchone()
     if result is not None:
         raise HTTPException(status_code=409, detail="Account already exists")
-    values: Tuple[str, str, str, str, str] = (
-        user["email"], user["name"], user["firstname"], user["password"], datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    password: str = user["password"]
+    password_bytes: bytes = password.encode(encoding="utf-8")
+    salt: bytes = bcrypt.gensalt()
+    hashed_password: bytes = bcrypt.hashpw(password=password_bytes, salt=salt)
+    values: Tuple[str, str, str, bytes, str] = (
+        user["email"], user["name"], user["firstname"], hashed_password, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     query = "INSERT INTO user (email, name, firstname, password, created_at) VALUES (%s, %s, %s, %s, %s)"
     cursor.execute(query, values)
     db.commit()
@@ -361,6 +366,12 @@ async def login_user(user: Dict[str, str]) -> Dict[str, str]:
     cursor.execute(query, values)
     result: Any | Tuple[str] | None = cursor.fetchone()
     if result is None:
+        raise HTTPException(status_code=404, detail="Invalid Credentials")
+    hashed_password_first: str = str(object=result[2])
+    hashed_password: bytes = hashed_password_first.encode(encoding="utf-8")
+    password: str = user["password"]
+    password_bytes: bytes = password.encode(encoding="utf-8")
+    if not bcrypt.checkpw(password=password_bytes, hashed_password=hashed_password):
         raise HTTPException(status_code=404, detail="Invalid Credentials")
     return encode_jwt(email=user["email"])
 
