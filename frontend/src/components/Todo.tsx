@@ -203,9 +203,13 @@ function UpdateTodo({
     if (!newTitle || !newDescription || !newStatus) {
       return;
     }
+    const token: string | null = localStorage.getItem("jwtToken");
+    if (!token) {
+      return;
+    }
     await fetch(`http://localhost:8000/todos/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", token: token },
       body: JSON.stringify({
         id: id,
         title: newTitle,
@@ -288,13 +292,14 @@ function UpdateTodo({
 function DeleteTodo({ id }: { id: string }): React.ReactElement {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { fetchTodos } = React.useContext(TodosContext);
-  if (!localStorage.getItem("jwtToken")) {
+  const token: string | null = localStorage.getItem("jwtToken");
+  if (!token) {
     return <></>;
   }
   const handleDelete: () => Promise<void> = async (): Promise<void> => {
     await fetch(`http://localhost:8000/todos/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", token: token },
       body: JSON.stringify({ id: id }),
     });
     onClose();
@@ -336,21 +341,38 @@ function AddTodo(): React.ReactElement {
   if (!localStorage.getItem("jwtToken")) {
     return <></>;
   }
-  const newTodo = {
-    title: title,
-    description: description,
-    due_time: dueTime,
-    status: status,
-    user_id: "1", //to change
-  };
 
   const handleSubmit: () => Promise<void> = async (): Promise<void> => {
     if (!title || !description || !status || !dueTime) {
       return;
     }
+
+    if (!localStorage.getItem("jwtToken")) {
+      return;
+    }
+
+    const token: string | null = localStorage.getItem("jwtToken");
+    if (!token) {
+      return;
+    }
+
+    const response = await fetch("http://localhost:8000/user/id", {
+      method: "GET",
+      headers: { token: token },
+    });
+    const id: string = await response.json();
+
+    const newTodo = {
+      title: title,
+      description: description,
+      due_time: dueTime,
+      status: status,
+      user_id: id,
+    };
+
     await fetch(`http://localhost:8000/todos`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", token: token },
       body: JSON.stringify(newTodo),
     });
     onClose();
