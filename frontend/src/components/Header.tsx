@@ -24,6 +24,8 @@ import {
   FormControl,
   FormLabel,
   FormHelperText,
+  InputRightElement,
+  InputGroup,
 } from "@chakra-ui/react";
 import { InfoOutlineIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 
@@ -58,6 +60,9 @@ function Register(): React.ReactElement {
   const [name, setName] = useState("");
   const [firstname, setFirstname] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [show, setShow] = React.useState(false);
+
+  const handleClick: () => void = (): void => setShow(!show);
 
   const newUser = {
     email: email,
@@ -148,15 +153,22 @@ function Register(): React.ReactElement {
               </FormControl>
               <FormControl mb={2} isRequired>
                 <FormLabel>Password</FormLabel>
-                <Input
-                  type="password"
-                  placeholder="At least 6 characters"
-                  aria-label="Password"
-                  value={password}
-                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                    setPassword(event.target.value)
-                  }
-                />
+                <InputGroup size="md">
+                  <Input
+                    type={show ? "text" : "password"}
+                    placeholder="At least 6 characters"
+                    aria-label="Password"
+                    value={password}
+                    onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                      setPassword(event.target.value)
+                    }
+                  />
+                  <InputRightElement width="4.5rem">
+                    <Button h="1.75rem" size="sm" onClick={handleClick}>
+                      {show ? "Hide" : "Show"}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
                 <Flex alignItems="center" ml={2}>
                   <Icon mt={2} as={InfoOutlineIcon} color="gray.500" mr={2} />
                   <FormHelperText>
@@ -196,6 +208,9 @@ function Login(): React.ReactElement {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [show, setShow] = React.useState(false);
+
+  const handleClick: () => void = (): void => setShow(!show);
 
   const loginUser = {
     email: email,
@@ -258,14 +273,22 @@ function Login(): React.ReactElement {
               </FormControl>
               <FormControl mb={2}>
                 <FormLabel>Password</FormLabel>
-                <Input
-                  type="password"
-                  aria-label="Password"
-                  value={password}
-                  onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                    setPassword(event.target.value)
-                  }
-                />
+                <InputGroup size="md">
+                  <Input
+                    type={show ? "text" : "password"}
+                    placeholder="Password"
+                    aria-label="Password"
+                    value={password}
+                    onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                      setPassword(event.target.value)
+                    }
+                  />
+                  <InputRightElement width="4.5rem">
+                    <Button h="1.75rem" size="sm" onClick={handleClick}>
+                      {show ? "Hide" : "Show"}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
               </FormControl>
             </Flex>
           </ModalBody>
