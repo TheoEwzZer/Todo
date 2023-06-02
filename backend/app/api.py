@@ -9,7 +9,9 @@ from app.auth.auth import decode_jwt, encode_jwt, get_email_from_token
 from app.config.db import get_db
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from mysql.connector.connection import MySQLConnection
 from mysql.connector.cursor import MySQLCursor
+from mysql.connector.pooling import PooledMySQLConnection
 
 app = FastAPI()
 
@@ -23,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-db = get_db()
+db: PooledMySQLConnection | MySQLConnection | Any = get_db()
 
 
 @app.get(path="/", tags=["root"])
