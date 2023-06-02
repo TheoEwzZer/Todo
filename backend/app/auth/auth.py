@@ -13,13 +13,17 @@ The module uses the following global variables:
 - JWT_ALGORITHM: The algorithm used for encoding and decoding JWT tokens.
 """
 
+import os
 import time
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import jwt
+from dotenv import load_dotenv
 from fastapi import Header, HTTPException
 
-JWT_SECRET_KEY = "secret"
+load_dotenv()
+
+JWT_SECRET_KEY: str | None = os.getenv(key="SECRET")
 JWT_ALGORITHM = "HS256"
 
 
@@ -33,11 +37,10 @@ def encode_jwt(email: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: A dictionary containing the encoded JWT token.
     """
-    payload = {
-        "email": email,
-        "expires": time.time() + 600
+    payload: dict[str, str] = {
+        "email": email
     }
-    token = jwt.encode(payload=payload, key=JWT_SECRET_KEY,
+    token: str = jwt.encode(payload=payload, key=JWT_SECRET_KEY,
                        algorithm=JWT_ALGORITHM)
     return {"token": token}
 
@@ -77,7 +80,7 @@ async def get_email_from_token(token: str = Header()) -> Optional[str]:
         Optional[str]: The email address from the decoded payload of the JWT token.
     """
     try:
-        decoded_token = jwt.decode(
+        decoded_token: dict[str, Any] = jwt.decode(
             jwt=token, key=JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM]
         )
         if email := decoded_token.get("email"):

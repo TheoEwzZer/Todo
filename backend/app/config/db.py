@@ -15,11 +15,15 @@ The function uses the following parameters:
 The function returns a connection to the MySQL database, which can be used to execute SQL queries and transactions.
 """
 
+import os
 from typing import Any
 
 import mysql.connector
+from dotenv import load_dotenv
 from mysql.connector.connection import MySQLConnection
 from mysql.connector.pooling import PooledMySQLConnection
+
+load_dotenv()
 
 
 def get_db() -> PooledMySQLConnection | MySQLConnection | Any:
@@ -30,8 +34,8 @@ def get_db() -> PooledMySQLConnection | MySQLConnection | Any:
         PooledMySQLConnection | MySQLConnection | Any: A connection to the MySQL database.
     """
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        database="todo"
+        host=os.getenv(key="MYSQL_HOST"),
+        user=os.getenv(key="MYSQL_USER"),
+        password=os.getenv(key="MYSQL_ROOT_PASSWORD"),
+        database=os.getenv(key="MYSQL_DATABASE"),
     )
