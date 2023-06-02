@@ -67,7 +67,6 @@ function Register(): React.ReactElement {
     });
     const data: any = await response.json();
     localStorage.setItem("jwtToken", data.token);
-    localStorage.setItem("email", email);
     onClose();
     setEmail("");
     setPassword("");
@@ -162,7 +161,6 @@ function Login(): React.ReactElement {
     });
     const data: any = await response.json();
     localStorage.setItem("jwtToken", data.token);
-    localStorage.setItem("email", email);
     onClose();
     setEmail("");
     setPassword("");
