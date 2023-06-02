@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from mysql.connector.connection import MySQLConnection
 from mysql.connector.cursor import MySQLCursor
 from mysql.connector.pooling import PooledMySQLConnection
+from validate_email import validate_email
 
 app = FastAPI()
 
@@ -81,9 +82,9 @@ async def create_todo(todo: Dict[str, str]) -> Dict[str, str]:
         Dict[str, str]: A dictionary containing the information for the newly created todo.
     """
     cursor: MySQLCursor = db.cursor()
-    query = "INSERT INTO todo (title, description, created_at, due_time, status, user_id) VALUES (%s, %s, %s, %s, %s, %s)"
-    values: Tuple[str, str, str, str, str, str] = (
-        todo["title"], todo["description"], datetime.now().strftime("%Y-%m-%d %H:%M:%S"), todo["due_time"], todo["status"], todo["user_id"])
+    query = "INSERT INTO todo (title, description, due_time, status, user_id) VALUES (%s, %s, %s, %s, %s)"
+    values: Tuple[str, str, str, str, str] = (
+        todo["title"], todo["description"], todo["due_time"], todo["status"], todo["user_id"])
     cursor.execute(query, values)
     db.commit()
     todo_id: Any | int | None = cursor.lastrowid
@@ -290,9 +291,9 @@ async def update_user(id: str, body: Dict) -> Dict[str, str]:
     result: Any | Tuple[str] | None = cursor.fetchone()
     if result is None:
         raise HTTPException(status_code=404, detail="Not found")
-    query = "UPDATE user SET email = %s, password = %s, name = %s, firstname = %s, created_at = %s WHERE id = %s"
-    values: Tuple[str, str, str, str, str, str] = (
-        body["email"], body["password"], body["name"], body["firstname"], datetime.now().strftime("%Y-%m-%d %H:%M:%S"), id)
+    query = "UPDATE user SET email = %s, password = %s, name = %s, firstname = %s WHERE id = %s"
+    values: Tuple[str, str, str, str, str] = (
+        body["email"], body["password"], body["name"], body["firstname"], id)
     cursor.execute(query, values)
     db.commit()
     query = "SELECT * FROM user WHERE id = %s"
@@ -328,21 +329,21 @@ async def register_user(user: Dict[str, str]) -> Dict[str, str]:
     result: Any | Tuple[str] | None = cursor.fetchone()
     if result is not None:
         raise HTTPException(status_code=409, detail="Account already exists")
+    if not validate_email(email=user["email"]):
+        raise HTTPException(
+            status_code=400, detail="Invalid email address. Please correct and try again")
+    if user["password"] is None or len(user["password"]) < 6:
+        raise HTTPException(
+            status_code=400, detail="Minimum 6 characters required")
     password: str = user["password"]
     password_bytes: bytes = password.encode(encoding="utf-8")
     salt: bytes = bcrypt.gensalt()
     hashed_password: bytes = bcrypt.hashpw(password=password_bytes, salt=salt)
-    values: Tuple[str, str, str, bytes, str] = (
-        user["email"], user["name"], user["firstname"], hashed_password, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    query = "INSERT INTO user (email, name, firstname, password, created_at) VALUES (%s, %s, %s, %s, %s)"
+    values: Tuple[str, str, str, bytes] = (
+        user["email"], user["name"], user["firstname"], hashed_password)
+    query = "INSERT INTO user (email, name, firstname, password) VALUES (%s, %s, %s, %s)"
     cursor.execute(query, values)
     db.commit()
-    todo_id: Any | int | None = cursor.lastrowid
-    query = "SELECT * FROM user WHERE id = %s"
-    cursor.execute(query, (todo_id,))
-    result: Any | Tuple[str] | None = cursor.fetchone()
-    if result is None:
-        raise HTTPException(status_code=404, detail="Not Found")
     return encode_jwt(email=user["email"])
 
 
@@ -361,8 +362,8 @@ async def login_user(user: Dict[str, str]) -> Dict[str, str]:
         Dict[str, str]: A dictionary containing the encoded JWT token.
     """
     cursor: MySQLCursor = db.cursor()
-    query = "SELECT * FROM user WHERE email = %s AND password = %s"
-    values: Tuple[str, str] = (user["email"], user["password"])
+    query = "SELECT * FROM user WHERE email = %s"
+    values: Tuple[str] = (user["email"],)
     cursor.execute(query, values)
     result: Any | Tuple[str] | None = cursor.fetchone()
     if result is None:
