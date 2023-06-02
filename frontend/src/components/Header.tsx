@@ -65,6 +65,14 @@ function Register(): React.ReactElement {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newUser),
     });
+    if (response.status !== 201) {
+      onClose();
+      setEmail("");
+      setPassword("");
+      setName("");
+      setFirstname("");
+      return;
+    }
     const data: any = await response.json();
     localStorage.setItem("jwtToken", data.token);
     onClose();
@@ -160,6 +168,12 @@ function Login(): React.ReactElement {
       body: JSON.stringify(loginUser),
     });
     const data: any = await response.json();
+    if (response.status !== 200) {
+      onClose();
+      setEmail("");
+      setPassword("");
+      return;
+    }
     localStorage.setItem("jwtToken", data.token);
     onClose();
     setEmail("");
