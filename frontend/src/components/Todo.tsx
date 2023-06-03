@@ -91,8 +91,8 @@ export default function Todos(): React.ReactElement {
 
   const sortedTodos: Todo[] = useMemo((): Todo[] => {
     return [...todos].sort((a: Todo, b: Todo): 1 | -1 | 0 => {
-      const columnA: string = a[sortColumn];
-      const columnB: string = b[sortColumn];
+      const columnA: string = a[sortColumn as keyof Todo];
+      const columnB: string = b[sortColumn as keyof Todo];
       if (columnA < columnB) {
         return sortDirection === "asc" ? -1 : 1;
       }
