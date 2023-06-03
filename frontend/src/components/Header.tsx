@@ -1,4 +1,9 @@
-import React, { ChangeEvent, useState } from "react";
+import React, {
+  ChangeEvent,
+  MutableRefObject,
+  useEffect,
+  useState,
+} from "react";
 import {
   Alert,
   AlertDescription,
@@ -13,6 +18,7 @@ import {
   FormLabel,
   Heading,
   Icon,
+  IconButton,
   Image,
   Input,
   InputGroup,
@@ -24,34 +30,85 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Popover,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
+  Portal,
   Spacer,
   useDisclosure,
 } from "@chakra-ui/react";
-import { InfoOutlineIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
+import {
+  ChevronDownIcon,
+  CloseIcon,
+  InfoOutlineIcon,
+  ViewIcon,
+  ViewOffIcon,
+} from "@chakra-ui/icons";
 
-const Header: () => React.JSX.Element = (): React.JSX.Element => (
-  <Box>
-    <Flex as="nav" bg="gray.600" height="80px" alignItems="center">
-      <Spacer />
-      <Box p="2">
-        <Heading size="md">Todo Manager</Heading>
-      </Box>
-      <Spacer />
-      <ButtonGroup gap="2">
-        <Register />
-        <Login />
-        <ClearLocalStorageButton />
-      </ButtonGroup>
-      <Spacer />
-    </Flex>
-    <Image
-      src="https://c0.wallpaperflare.com/preview/516/233/193/writing-postcard-letter-pen.jpg"
-      alt="Todo Manager"
-      width="100%"
-      height="300px"
-    />
-  </Box>
-);
+async function IsLoggedIn(): Promise<boolean> {
+  const token: string | null = localStorage.getItem("jwtToken");
+  if (!token) {
+    return false;
+  }
+  const response = await fetch(`http://localhost:8000/check_token`, {
+    method: "GET",
+    headers: { token: token },
+  });
+  if (response.status !== 200) {
+    return false;
+  }
+  return true;
+}
+
+const Header: () => React.ReactElement = (): React.ReactElement => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect((): void => {
+    const checkLoginStatus: () => Promise<void> = async (): Promise<void> => {
+      const loggedIn: boolean = await IsLoggedIn();
+      setIsLoggedIn(loggedIn);
+    };
+    checkLoginStatus();
+  }, []);
+
+  const renderLoginButtons: () => React.ReactNode = (): React.ReactNode => {
+    if (isLoggedIn) {
+      return (
+        <ButtonGroup gap="2">
+          <Profile />
+        </ButtonGroup>
+      );
+    } else {
+      return (
+        <ButtonGroup gap="2">
+          <Register />
+          <Login />
+        </ButtonGroup>
+      );
+    }
+  };
+
+  return (
+    <Box>
+      <Flex as="nav" bg="gray.600" height="80px" alignItems="center">
+        <Spacer />
+        <Box p="2">
+          <Heading size="md">Todo Manager</Heading>
+        </Box>
+        <Spacer />
+        {renderLoginButtons()}
+        <Spacer />
+      </Flex>
+      <Image
+        src="https://c0.wallpaperflare.com/preview/516/233/193/writing-postcard-letter-pen.jpg"
+        alt="Todo Manager"
+        width="100%"
+        height="300px"
+      />
+    </Box>
+  );
+};
 
 function Register(): React.ReactElement {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -61,6 +118,7 @@ function Register(): React.ReactElement {
   const [firstname, setFirstname] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [show, setShow] = React.useState(false);
+  const initialRef: MutableRefObject<null> = React.useRef(null);
 
   const handleClick: () => void = (): void => setShow(!show);
 
@@ -117,7 +175,12 @@ function Register(): React.ReactElement {
       <Button colorScheme="teal" onClick={onOpen}>
         Sign Up
       </Button>
-      <Modal isOpen={isOpen} onClose={close}>
+      <Modal
+        motionPreset="slideInBottom"
+        isOpen={isOpen}
+        onClose={close}
+        initialFocusRef={initialRef}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Sign Up</ModalHeader>
@@ -127,6 +190,7 @@ function Register(): React.ReactElement {
               <FormControl mb={2} isRequired>
                 <FormLabel>Last Name</FormLabel>
                 <Input
+                  ref={initialRef}
                   type="text"
                   aria-label="Last Name"
                   value={name}
@@ -173,10 +237,12 @@ function Register(): React.ReactElement {
                     }
                     onKeyDown={handleKeyDown}
                   />
-                  <InputRightElement width="4.5rem">
-                    <Button h="1.75rem" size="sm" onClick={handleClick}>
-                      {show ? "Hide" : "Show"}
-                    </Button>
+                  <InputRightElement>
+                    <IconButton
+                      aria-label={show ? "Hide" : "Show"}
+                      icon={show ? <ViewOffIcon /> : <ViewIcon />}
+                      onClick={handleClick}
+                    />
                   </InputRightElement>
                 </InputGroup>
                 <Flex alignItems="center" ml={2}>
@@ -189,7 +255,12 @@ function Register(): React.ReactElement {
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button h="1.5rem" size="sm" onClick={handleSubmit}>
+            <Button
+              h="1.5rem"
+              size="sm"
+              colorScheme="teal"
+              onClick={handleSubmit}
+            >
               Sign Up
             </Button>
           </ModalFooter>
@@ -219,6 +290,7 @@ function Login(): React.ReactElement {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [show, setShow] = React.useState(false);
+  const initialRef: MutableRefObject<null> = React.useRef(null);
 
   const handleClick: () => void = (): void => setShow(!show);
 
@@ -269,7 +341,12 @@ function Login(): React.ReactElement {
       <Button colorScheme="teal" onClick={onOpen}>
         Sign In
       </Button>
-      <Modal isOpen={isOpen} onClose={close}>
+      <Modal
+        motionPreset="slideInBottom"
+        isOpen={isOpen}
+        onClose={close}
+        initialFocusRef={initialRef}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Sign In</ModalHeader>
@@ -279,6 +356,7 @@ function Login(): React.ReactElement {
               <FormControl mb={2}>
                 <FormLabel>Email</FormLabel>
                 <Input
+                  ref={initialRef}
                   type="email"
                   aria-label="Email"
                   value={email}
@@ -301,17 +379,24 @@ function Login(): React.ReactElement {
                     }
                     onKeyDown={handleKeyDown}
                   />
-                  <InputRightElement width="4.5rem">
-                    <Button h="1.75rem" size="sm" onClick={handleClick}>
-                      {show ? "Hide" : "Show"}
-                    </Button>
+                  <InputRightElement>
+                    <IconButton
+                      aria-label={show ? "Hide" : "Show"}
+                      icon={show ? <ViewOffIcon /> : <ViewIcon />}
+                      onClick={handleClick}
+                    />
                   </InputRightElement>
                 </InputGroup>
               </FormControl>
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button h="1.5rem" size="sm" onClick={handleSubmit}>
+            <Button
+              h="1.5rem"
+              size="sm"
+              colorScheme="teal"
+              onClick={handleSubmit}
+            >
               Sign In
             </Button>
           </ModalFooter>
@@ -335,16 +420,64 @@ function Login(): React.ReactElement {
   );
 }
 
-function ClearLocalStorageButton(): React.ReactElement {
-  const handleClearLocalStorage: () => void = (): void => {
-    localStorage.clear();
+function Profile(): React.ReactElement {
+  const [firstname, setFirstname] = useState("");
+
+  const token: string | null = localStorage.getItem("jwtToken");
+  if (!token) {
+    return <></>;
+  }
+  useEffect((): void => {
+    const fetchUser: () => Promise<void> = async (): Promise<void> => {
+      const response = await fetch("http://localhost:8000/user/firstname", {
+        method: "GET",
+        headers: { token: token },
+      });
+      const data: any = await response.json();
+      setFirstname(data);
+    };
+    fetchUser();
+  }, []);
+
+  const handleLogOut: () => void = (): void => {
+    localStorage.removeItem("jwtToken");
     window.location.reload();
   };
 
+  const handleViewProfile: () => void = (): void => {
+    window.location.href = "/profile";
+  };
+
   return (
-    <Button colorScheme="red" onClick={handleClearLocalStorage}>
-      Sign Out
-    </Button>
+    <Popover>
+      <PopoverTrigger>
+        <Button rightIcon={<ChevronDownIcon />}>{firstname}</Button>
+      </PopoverTrigger>
+      <Portal>
+        <PopoverContent width="auto">
+          <PopoverBody
+            alignItems="center"
+            display="flex"
+            flexDirection="column"
+            onClick={handleViewProfile}
+            width="100%"
+          >
+            <Button leftIcon={<ViewIcon />} colorScheme="blue">
+              View Profile
+            </Button>
+            <Button
+              colorScheme="red"
+              leftIcon={<CloseIcon />}
+              mt={2}
+              onClick={handleLogOut}
+              width="100%"
+            >
+              Sign Out
+            </Button>
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
+    </Popover>
   );
 }
 
