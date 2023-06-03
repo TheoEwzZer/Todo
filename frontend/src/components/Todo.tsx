@@ -431,13 +431,12 @@ function AddTodo(): React.ReactElement {
       return;
     }
 
-    const response = await fetch("http://localhost:8000/user/id", {
+    const response = await fetch("http://localhost:8000/users", {
       method: "GET",
       headers: { token: token },
     });
-    const id: string = await response.json();
+    const data: any = await response.json();
     if (response.status !== 201) {
-      const data: any = await response.json();
       setErrorMessage(data.detail);
       setTitle("");
       setDescription("");
@@ -450,7 +449,7 @@ function AddTodo(): React.ReactElement {
       description: description,
       due_time: dueTime,
       status: status,
-      user_id: id,
+      user_id: data.id,
     };
 
     await fetch(`http://localhost:8000/todos`, {
