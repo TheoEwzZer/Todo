@@ -1,16 +1,17 @@
+import Home from "./pages/home.tsx";
+import Profile from "./pages/profile.tsx";
 import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { createRoot } from "react-dom/client";
-import { ChakraProvider } from "@chakra-ui/react";
 
-import Header from "./components/Header.tsx";
-import Todos from "./components/Todo.tsx";
-
-function App(): React.ReactElement {
+export default function App(): React.ReactElement {
   return (
-    <ChakraProvider>
-      <Header />
-      <Todos />
-    </ChakraProvider>
+    <Router>
+      <Routes>
+        <Route path="*" element={<Home />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+    </Router>
   );
 }
 
