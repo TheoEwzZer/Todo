@@ -1,4 +1,10 @@
-import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
+import React, {
+  ChangeEvent,
+  MutableRefObject,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Alert,
   AlertDescription,
@@ -257,7 +263,7 @@ function UpdateTodo({
       <Button colorScheme="blue" onClick={onOpen}>
         Edit
       </Button>
-      <Modal isOpen={isOpen} onClose={close}>
+      <Modal motionPreset="slideInBottom" isOpen={isOpen} onClose={close}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Edit {title}</ModalHeader>
@@ -321,7 +327,12 @@ function UpdateTodo({
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button h="1.5rem" size="sm" onClick={handleUpdate}>
+            <Button
+              h="1.5rem"
+              size="sm"
+              colorScheme="blue"
+              onClick={handleUpdate}
+            >
               Edit
             </Button>
           </ModalFooter>
@@ -366,7 +377,7 @@ function DeleteTodo({ id }: { id: string }): React.ReactElement {
       <Button colorScheme="red" onClick={onOpen}>
         Delete
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal motionPreset="slideInBottom" isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Delete</ModalHeader>
@@ -376,7 +387,12 @@ function DeleteTodo({ id }: { id: string }): React.ReactElement {
           </ModalBody>
 
           <ModalFooter>
-            <Button h="1.5rem" size="sm" onClick={handleDelete}>
+            <Button
+              h="1.5rem"
+              size="sm"
+              colorScheme="red"
+              onClick={handleDelete}
+            >
               Delete
             </Button>
           </ModalFooter>
@@ -394,6 +410,7 @@ function AddTodo(): React.ReactElement {
   const [dueTime, setDueTime] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const { fetchTodos } = React.useContext(TodosContext);
+  const initialRef: MutableRefObject<null> = React.useRef(null);
 
   if (!localStorage.getItem("jwtToken")) {
     return <></>;
@@ -472,7 +489,12 @@ function AddTodo(): React.ReactElement {
       >
         Create new task
       </Button>
-      <Modal isOpen={isOpen} onClose={close}>
+      <Modal
+        motionPreset="slideInBottom"
+        isOpen={isOpen}
+        onClose={close}
+        initialFocusRef={initialRef}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Create new task</ModalHeader>
@@ -482,6 +504,7 @@ function AddTodo(): React.ReactElement {
               <FormControl mb={2} isRequired>
                 <FormLabel>Title</FormLabel>
                 <Input
+                  ref={initialRef}
                   type="text"
                   aria-label="Title"
                   value={title}
@@ -537,7 +560,12 @@ function AddTodo(): React.ReactElement {
           </ModalBody>
 
           <ModalFooter>
-            <Button h="1.5rem" size="sm" onClick={handleSubmit}>
+            <Button
+              h="1.5rem"
+              size="sm"
+              colorScheme="green"
+              onClick={handleSubmit}
+            >
               Create new task
             </Button>
           </ModalFooter>
