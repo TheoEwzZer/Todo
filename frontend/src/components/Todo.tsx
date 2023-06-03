@@ -241,6 +241,12 @@ function UpdateTodo({
     fetchTodos();
   };
 
+  const handleKeyDown: (e: any) => void = (e: any): void => {
+    if (e.keyCode === 13) {
+      handleUpdate();
+    }
+  };
+
   const close: () => void = (): void => {
     onClose();
     setErrorMessage("");
@@ -251,7 +257,7 @@ function UpdateTodo({
       <Button colorScheme="blue" onClick={onOpen}>
         Edit
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={close}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Edit {title}</ModalHeader>
@@ -267,6 +273,7 @@ function UpdateTodo({
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setNewTitle(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
               <FormControl mb={2}>
@@ -278,6 +285,7 @@ function UpdateTodo({
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setNewDescription(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
               <FormControl mb={2} isRequired>
@@ -287,6 +295,7 @@ function UpdateTodo({
                   mb={2}
                   value={newStatus}
                   onChange={(event: string): void => setNewStatus(event)}
+                  onKeyDown={handleKeyDown}
                 >
                   <HStack spacing="24px">
                     <Radio value="not started">Not Started</Radio>
@@ -306,6 +315,7 @@ function UpdateTodo({
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setNewDueTime(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
             </Flex>
@@ -438,6 +448,12 @@ function AddTodo(): React.ReactElement {
     setStatus("not started");
   };
 
+  const handleKeyDown: (e: any) => void = (e: any): void => {
+    if (e.keyCode === 13) {
+      handleSubmit();
+    }
+  };
+
   const close: () => void = (): void => {
     onClose();
     setTitle("");
@@ -472,6 +488,7 @@ function AddTodo(): React.ReactElement {
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setTitle(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
               <FormControl mb={2}>
@@ -483,6 +500,7 @@ function AddTodo(): React.ReactElement {
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setDescription(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
               <FormControl mb={2} isRequired>
@@ -492,6 +510,7 @@ function AddTodo(): React.ReactElement {
                   mb={2}
                   value={status}
                   onChange={(event: string): void => setStatus(event)}
+                  onKeyDown={handleKeyDown}
                 >
                   <HStack spacing="24px">
                     <Radio value="not started">Not Started</Radio>
@@ -511,6 +530,7 @@ function AddTodo(): React.ReactElement {
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setDueTime(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
             </Flex>

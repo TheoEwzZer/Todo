@@ -97,6 +97,12 @@ function Register(): React.ReactElement {
     window.location.reload();
   };
 
+  const handleKeyDown: (e: any) => void = (e: any): void => {
+    if (e.keyCode === 13) {
+      handleSubmit();
+    }
+  };
+
   const close: () => void = (): void => {
     onClose();
     setEmail("");
@@ -127,6 +133,7 @@ function Register(): React.ReactElement {
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setName(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
               <FormControl mb={2} isRequired>
@@ -138,6 +145,7 @@ function Register(): React.ReactElement {
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setFirstname(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
               <FormControl mb={2} isRequired>
@@ -149,6 +157,7 @@ function Register(): React.ReactElement {
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setEmail(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
               <FormControl mb={2} isRequired>
@@ -162,6 +171,7 @@ function Register(): React.ReactElement {
                     onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                       setPassword(event.target.value)
                     }
+                    onKeyDown={handleKeyDown}
                   />
                   <InputRightElement width="4.5rem">
                     <Button h="1.75rem" size="sm" onClick={handleClick}>
@@ -241,6 +251,12 @@ function Login(): React.ReactElement {
     window.location.reload();
   };
 
+  const handleKeyDown: (e: any) => void = (e: any): void => {
+    if (e.keyCode === 13) {
+      handleSubmit();
+    }
+  };
+
   const close: () => void = (): void => {
     onClose();
     setEmail("");
@@ -269,6 +285,7 @@ function Login(): React.ReactElement {
                   onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                     setEmail(event.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
               <FormControl mb={2}>
@@ -282,6 +299,7 @@ function Login(): React.ReactElement {
                     onChange={(event: ChangeEvent<HTMLInputElement>): void =>
                       setPassword(event.target.value)
                     }
+                    onKeyDown={handleKeyDown}
                   />
                   <InputRightElement width="4.5rem">
                     <Button h="1.75rem" size="sm" onClick={handleClick}>
