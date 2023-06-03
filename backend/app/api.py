@@ -201,54 +201,6 @@ async def view_all_users() -> List[Dict[str, str]]:
     return users
 
 
-@app.get(path="/user/id", tags=["users"], status_code=200)
-async def view_user_id(email: Optional[str] = Depends(dependency=get_email_from_token)) -> str:
-    """
-    View user ID
-
-    Args:
-        email (Optional[str]): Optional email address of the user.
-
-    Raises:
-        HTTPException: If the user is not found.
-
-    Returns:
-        str: A string representing the user ID.
-    """
-    cursor: MySQLCursor = db.cursor()
-    query = "SELECT id FROM user WHERE email = %s"
-    cursor.execute(query, (email,))
-    result: Any | Tuple[str] | None = cursor.fetchone()
-    if result is None:
-        raise HTTPException(status_code=404, detail="Not Found")
-    user_id: str = str(object=result[0])
-    return user_id
-
-
-@app.get(path="/user/firstname", tags=["users"], status_code=200)
-async def view_user_firstname(email: Optional[str] = Depends(dependency=get_email_from_token)) -> str:
-    """
-    View user name
-
-    Args:
-        email (Optional[str]): Optional email address of the user.
-
-    Raises:
-        HTTPException: If the user is not found.
-
-    Returns:
-        str: A string representing the user name.
-    """
-    cursor: MySQLCursor = db.cursor()
-    query = "SELECT firstname FROM user WHERE email = %s"
-    cursor.execute(query, (email,))
-    result: Any | Tuple[str] | None = cursor.fetchone()
-    if result is None:
-        raise HTTPException(status_code=404, detail="Not Found")
-    firstname: str = str(object=result[0])
-    return firstname
-
-
 @app.get(path="/user/todos", tags=["users"], status_code=200)
 async def view_all_user_todos(email: Optional[str] = Depends(dependency=get_email_from_token)) -> List[Dict[str, str]]:
     """
@@ -316,8 +268,64 @@ async def update_user(id: str, body: Dict) -> Dict[str, str]:
     if result is None:
         raise HTTPException(status_code=404, detail="Not found")
     query = "UPDATE user SET email = %s, password = %s, name = %s, firstname = %s WHERE id = %s"
+    if not validate_email(email=body["email"]):
+        raise HTTPException(
+            status_code=400, detail="Invalid email address. Please correct and try again")
+    if body["password"] is None or len(body["password"]) < 6:
+        raise HTTPException(
+            status_code=400, detail="Minimum 6 characters required")
+    password: str = body["password"]
+    password_bytes: bytes = password.encode(encoding="utf-8")
+    salt: bytes = bcrypt.gensalt()
+    hashed_password: bytes = bcrypt.hashpw(password=password_bytes, salt=salt)
     values: Tuple[str, str, str, str, str] = (
-        body["email"], body["password"], body["name"], body["firstname"], id)
+        body["email"], hashed_password, body["name"], body["firstname"], id)
+    cursor.execute(query, values)
+    db.commit()
+    query = "SELECT * FROM user WHERE id = %s"
+    cursor.execute(query, (id,))
+    result: Any | Tuple[str] | None = cursor.fetchone()
+    if result is None:
+        raise HTTPException(status_code=404, detail="Not Found")
+    return {
+        "email": str(object=result[1]),
+        "password": str(object=result[2]),
+        "name": str(object=result[3]),
+        "firstname": str(object=result[4]),
+    }
+
+
+@app.put(path="/users/email/{id}", tags=["users"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
+async def update_user_email(id: str, body: Dict) -> Dict[str, str]:
+    """
+    Update user email address
+
+    Args:
+        id (str): The ID of the user to update.
+        body (Dict): A dictionary containing the updated user information.
+
+    Raises:
+        HTTPException: If the ID is not an integer or if the user is not found.
+
+    Returns:
+        Dict[str, str]: A dictionary containing the updated user information.
+    """
+    try:
+        int(id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail="Bad parameter") from e
+    cursor: MySQLCursor = db.cursor()
+    query = "SELECT * FROM user WHERE id = %s"
+    cursor.execute(query, (id,))
+    result: Any | Tuple[str] | None = cursor.fetchone()
+    if result is None:
+        raise HTTPException(status_code=404, detail="Not found")
+    query = "UPDATE user SET email = %s WHERE id = %s"
+    if not validate_email(email=body["email"]):
+        raise HTTPException(
+            status_code=400, detail="Invalid email address. Please correct and try again")
+    values: Tuple[str] = (
+        body["email"], id)
     cursor.execute(query, values)
     db.commit()
     query = "SELECT * FROM user WHERE id = %s"
@@ -440,3 +448,32 @@ async def check_token() -> Dict[str, str]:
         Dict[str, str]: A dictionary containing a success message.
     """
     return {"msg": "Token is valid"}
+
+
+@app.get(path="/users", tags=["users"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
+async def view_user(email: Optional[str] = Depends(dependency=get_email_from_token)) -> str:
+    """
+    View user details.
+
+    Args:
+        email (Optional[str], optional): The email of the user. Defaults to Depends(dependency=get_email_from_token).
+
+    Raises:
+        HTTPException: If the user is not found.
+
+    Returns:
+        str: A dictionary containing the user's email, password, name, and firstname.
+    """
+    cursor: MySQLCursor = db.cursor()
+    query = "SELECT * FROM user WHERE email = %s"
+    cursor.execute(query, (email,))
+    result: Any | Tuple[str] | None = cursor.fetchone()
+    if result is None:
+        raise HTTPException(status_code=404, detail="Not Found")
+    return {
+        "id": str(object=result[0]),
+        "email": str(object=result[1]),
+        "password": str(object=result[2]),
+        "name": str(object=result[3]),
+        "firstname": str(object=result[4]),
+    }
