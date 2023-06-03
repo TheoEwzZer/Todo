@@ -225,6 +225,30 @@ async def view_user_id(email: Optional[str] = Depends(dependency=get_email_from_
     return user_id
 
 
+@app.get(path="/user/firstname", tags=["users"], status_code=200)
+async def view_user_firstname(email: Optional[str] = Depends(dependency=get_email_from_token)) -> str:
+    """
+    View user name
+
+    Args:
+        email (Optional[str]): Optional email address of the user.
+
+    Raises:
+        HTTPException: If the user is not found.
+
+    Returns:
+        str: A string representing the user name.
+    """
+    cursor: MySQLCursor = db.cursor()
+    query = "SELECT firstname FROM user WHERE email = %s"
+    cursor.execute(query, (email,))
+    result: Any | Tuple[str] | None = cursor.fetchone()
+    if result is None:
+        raise HTTPException(status_code=404, detail="Not Found")
+    firstname: str = str(object=result[0])
+    return firstname
+
+
 @app.get(path="/user/todos", tags=["users"], status_code=200)
 async def view_all_user_todos(email: Optional[str] = Depends(dependency=get_email_from_token)) -> List[Dict[str, str]]:
     """
