@@ -1,14 +1,14 @@
 import React from "react";
 import { ChakraProvider } from "@chakra-ui/react";
 
-import Todos from "../components/Todo.tsx";
 import Header from "../components/Header.tsx";
+import PersonalInfo from "../components/Profile.tsx";
 
 function Profile(): React.ReactElement {
   return (
     <ChakraProvider>
       <Header />
-      <Todos />
+      <PersonalInfo />
     </ChakraProvider>
   );
 }
