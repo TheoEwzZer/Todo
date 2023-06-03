@@ -100,12 +100,6 @@ const Header: () => React.ReactElement = (): React.ReactElement => {
         {renderLoginButtons()}
         <Spacer />
       </Flex>
-      <Image
-        src="https://c0.wallpaperflare.com/preview/516/233/193/writing-postcard-letter-pen.jpg"
-        alt="Todo Manager"
-        width="100%"
-        height="300px"
-      />
     </Box>
   );
 };
@@ -427,14 +421,19 @@ function Profile(): React.ReactElement {
   if (!token) {
     return <></>;
   }
+
   useEffect((): void => {
     const fetchUser: () => Promise<void> = async (): Promise<void> => {
-      const response = await fetch("http://localhost:8000/user/firstname", {
+      const response = await fetch("http://localhost:8000/users", {
         method: "GET",
         headers: { token: token },
       });
       const data: any = await response.json();
-      setFirstname(data);
+      if (response.status !== 200) {
+        handleLogOut();
+        return;
+      }
+      setFirstname(data.firstname);
     };
     fetchUser();
   }, []);
