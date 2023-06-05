@@ -372,7 +372,6 @@ function Login(): React.ReactElement {
                     id="password"
                     name="password"
                     type={show ? "text" : "password"}
-                    placeholder="Password"
                     aria-label="Password"
                     value={password}
                     onChange={(event: ChangeEvent<HTMLInputElement>): void =>
