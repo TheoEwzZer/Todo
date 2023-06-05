@@ -1,6 +1,5 @@
 import {
   ChevronDownIcon,
-  CloseIcon,
   InfoOutlineIcon,
   ViewIcon,
   ViewOffIcon,
@@ -44,6 +43,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import SignOut from "./SignOut";
 
 async function IsLoggedIn(): Promise<boolean> {
   const token: string | null = localStorage.getItem("jwtToken");
@@ -116,13 +116,17 @@ function Register(): React.ReactElement {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [firstname, setFirstname] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [show, setShow] = React.useState(false);
+  const [showConfirm, setShowConfirm] = React.useState(false);
   const initialRef: MutableRefObject<null> = React.useRef(null);
 
   const handleClick: () => void = (): void => setShow(!show);
+  const handleClickConfirm: () => void = (): void =>
+    setShowConfirm(!showConfirm);
 
   const newUser = {
     email: email,
@@ -132,8 +136,14 @@ function Register(): React.ReactElement {
   };
 
   const handleSubmit: () => Promise<void> = async (): Promise<void> => {
-    if (!email || !password || !name || !firstname) {
+    if (!email || !password || !confirmPassword || !name || !firstname) {
       setErrorMessage("Please fill in all fields.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      setPassword("");
+      setConfirmPassword("");
       return;
     }
     const response = await fetch(`http://localhost:8000/register`, {
@@ -146,12 +156,14 @@ function Register(): React.ReactElement {
       setErrorMessage(data.detail);
       setEmail("");
       setPassword("");
+      setConfirmPassword("");
       return;
     }
     localStorage.setItem("jwtToken", data.token);
     onClose();
     setEmail("");
     setPassword("");
+    setConfirmPassword("");
     setName("");
     setFirstname("");
     window.location.reload();
@@ -167,6 +179,7 @@ function Register(): React.ReactElement {
     onClose();
     setEmail("");
     setPassword("");
+    setConfirmPassword("");
     setName("");
     setFirstname("");
     setErrorMessage("");
@@ -240,7 +253,7 @@ function Register(): React.ReactElement {
                       setPassword(event.target.value)
                     }
                     onKeyDown={handleKeyDown}
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     required
                   />
                   <InputRightElement>
@@ -259,15 +272,38 @@ function Register(): React.ReactElement {
                   </FormHelperText>
                 </Flex>
               </FormControl>
+              <FormControl mb={2} isRequired>
+                <FormLabel htmlFor="confirmPassword">
+                  Confirm Password
+                </FormLabel>
+                <InputGroup size="md">
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirm ? "text" : "password"}
+                    aria-label="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                      setConfirmPassword(event.target.value)
+                    }
+                    onKeyDown={handleKeyDown}
+                    autoComplete="new-password"
+                    required
+                  />
+                  <InputRightElement>
+                    <IconButton
+                      variant="link"
+                      aria-label="Confirm Password"
+                      icon={showConfirm ? <ViewOffIcon /> : <ViewIcon />}
+                      onClick={handleClickConfirm}
+                    />
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button
-              h="1.5rem"
-              size="sm"
-              colorScheme="teal"
-              onClick={handleSubmit}
-            >
+            <Button width="100%" colorScheme="teal" onClick={handleSubmit}>
               Sign Up
             </Button>
           </ModalFooter>
@@ -403,12 +439,7 @@ function Login(): React.ReactElement {
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button
-              h="1.5rem"
-              size="sm"
-              colorScheme="teal"
-              onClick={handleSubmit}
-            >
+            <Button width="100%" colorScheme="teal" onClick={handleSubmit}>
               Sign In
             </Button>
           </ModalFooter>
@@ -476,34 +507,18 @@ function Profile(): React.ReactElement {
             alignItems="center"
             display="flex"
             flexDirection="column"
-            onClick={handleViewProfile}
             width="100%"
           >
             {location.pathname !== "/profile" && (
-              <Button leftIcon={<ViewIcon />} colorScheme="blue">
+              <Button
+                onClick={handleViewProfile}
+                leftIcon={<ViewIcon />}
+                colorScheme="blue"
+              >
                 View Profile
               </Button>
             )}
-            {location.pathname !== "/profile" ? (
-              <Button
-                colorScheme="red"
-                leftIcon={<CloseIcon />}
-                mt={2}
-                onClick={handleLogOut}
-                width="100%"
-              >
-                Sign Out
-              </Button>
-            ) : (
-              <Button
-                colorScheme="red"
-                leftIcon={<CloseIcon />}
-                onClick={handleLogOut}
-                width="100%"
-              >
-                Sign Out
-              </Button>
-            )}
+            <SignOut />
           </PopoverBody>
         </PopoverContent>
       </Portal>
