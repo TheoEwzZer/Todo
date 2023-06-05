@@ -71,10 +71,19 @@ const Header: () => React.ReactElement = (): React.ReactElement => {
     checkLoginStatus();
   }, []);
 
+  const handleHome: () => void = (): void => {
+    window.location.href = "/";
+  };
+
   const renderLoginButtons: () => React.ReactNode = (): React.ReactNode => {
     if (isLoggedIn) {
       return (
         <ButtonGroup gap="2">
+          {location.pathname !== "/" && (
+            <Button colorScheme="blue" onClick={handleHome}>
+              View my tasks
+            </Button>
+          )}
           <Profile />
         </ButtonGroup>
       );
@@ -470,18 +479,31 @@ function Profile(): React.ReactElement {
             onClick={handleViewProfile}
             width="100%"
           >
-            <Button leftIcon={<ViewIcon />} colorScheme="blue">
-              View Profile
-            </Button>
-            <Button
-              colorScheme="red"
-              leftIcon={<CloseIcon />}
-              mt={2}
-              onClick={handleLogOut}
-              width="100%"
-            >
-              Sign Out
-            </Button>
+            {location.pathname !== "/profile" && (
+              <Button leftIcon={<ViewIcon />} colorScheme="blue">
+                View Profile
+              </Button>
+            )}
+            {location.pathname !== "/profile" ? (
+              <Button
+                colorScheme="red"
+                leftIcon={<CloseIcon />}
+                mt={2}
+                onClick={handleLogOut}
+                width="100%"
+              >
+                Sign Out
+              </Button>
+            ) : (
+              <Button
+                colorScheme="red"
+                leftIcon={<CloseIcon />}
+                onClick={handleLogOut}
+                width="100%"
+              >
+                Sign Out
+              </Button>
+            )}
           </PopoverBody>
         </PopoverContent>
       </Portal>
