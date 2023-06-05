@@ -176,7 +176,7 @@ function Register(): React.ReactElement {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Sign Up</ModalHeader>
+          <ModalHeader>Create an account</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Flex direction={"column"}>
@@ -347,7 +347,7 @@ function Login(): React.ReactElement {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Sign In</ModalHeader>
+          <ModalHeader>Log in to your account</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Flex direction={"column"}>
