@@ -106,7 +106,7 @@ export default function Profile(): React.ReactElement {
   };
 
   return (
-    <Card align="center">
+    <Card align="center" maxW="2xl" mx="auto" mt={4}>
       <CardHeader>
         <Heading size="md">My Personal Informations</Heading>
       </CardHeader>
@@ -186,9 +186,6 @@ export default function Profile(): React.ReactElement {
           </InputGroup>
         </FormControl>
       </CardBody>
-      <CardFooter>
-        <Button colorScheme="blue">Ectazium</Button>
-      </CardFooter>
     </Card>
   );
 }
