@@ -218,9 +218,11 @@ function Register(): React.ReactElement {
                 />
               </FormControl>
               <FormControl mb={2} isRequired>
-                <FormLabel>Password</FormLabel>
+                <FormLabel htmlFor="password">Password</FormLabel>
                 <InputGroup size="md">
                   <Input
+                    id="password"
+                    name="password"
                     type={show ? "text" : "password"}
                     placeholder="At least 6 characters"
                     aria-label="Password"
@@ -229,9 +231,12 @@ function Register(): React.ReactElement {
                       setPassword(event.target.value)
                     }
                     onKeyDown={handleKeyDown}
+                    autoComplete="current-password"
+                    required
                   />
                   <InputRightElement>
                     <IconButton
+                      variant="link"
                       aria-label={show ? "Hide" : "Show"}
                       icon={show ? <ViewOffIcon /> : <ViewIcon />}
                       onClick={handleClick}
@@ -347,8 +352,9 @@ function Login(): React.ReactElement {
           <ModalBody>
             <Flex direction={"column"}>
               <FormControl mb={2}>
-                <FormLabel>Email</FormLabel>
+                <FormLabel htmlFor="email">Email</FormLabel>
                 <Input
+                  id="email"
                   ref={initialRef}
                   type="email"
                   aria-label="Email"
@@ -360,9 +366,11 @@ function Login(): React.ReactElement {
                 />
               </FormControl>
               <FormControl mb={2}>
-                <FormLabel>Password</FormLabel>
+                <FormLabel htmlFor="password">Password</FormLabel>
                 <InputGroup size="md">
                   <Input
+                    id="password"
+                    name="password"
                     type={show ? "text" : "password"}
                     placeholder="Password"
                     aria-label="Password"
@@ -371,9 +379,12 @@ function Login(): React.ReactElement {
                       setPassword(event.target.value)
                     }
                     onKeyDown={handleKeyDown}
+                    autoComplete="current-password"
+                    required
                   />
                   <InputRightElement>
                     <IconButton
+                      variant="link"
                       aria-label={show ? "Hide" : "Show"}
                       icon={show ? <ViewOffIcon /> : <ViewIcon />}
                       onClick={handleClick}
