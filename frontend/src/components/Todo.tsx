@@ -1,10 +1,4 @@
-import React, {
-  ChangeEvent,
-  MutableRefObject,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import {
   Alert,
   AlertDescription,
@@ -36,7 +30,13 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
-import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
+import React, {
+  ChangeEvent,
+  MutableRefObject,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 interface SortArrowProps {
   direction: "asc" | "desc";

@@ -1,9 +1,10 @@
-import React, {
-  ChangeEvent,
-  MutableRefObject,
-  useEffect,
-  useState,
-} from "react";
+import {
+  ChevronDownIcon,
+  CloseIcon,
+  InfoOutlineIcon,
+  ViewIcon,
+  ViewOffIcon,
+} from "@chakra-ui/icons";
 import {
   Alert,
   AlertDescription,
@@ -19,7 +20,6 @@ import {
   Heading,
   Icon,
   IconButton,
-  Image,
   Input,
   InputGroup,
   InputRightElement,
@@ -38,13 +38,12 @@ import {
   Spacer,
   useDisclosure,
 } from "@chakra-ui/react";
-import {
-  ChevronDownIcon,
-  CloseIcon,
-  InfoOutlineIcon,
-  ViewIcon,
-  ViewOffIcon,
-} from "@chakra-ui/icons";
+import React, {
+  ChangeEvent,
+  MutableRefObject,
+  useEffect,
+  useState,
+} from "react";
 
 async function IsLoggedIn(): Promise<boolean> {
   const token: string | null = localStorage.getItem("jwtToken");

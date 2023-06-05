@@ -1,8 +1,8 @@
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Home from "./pages/home.tsx";
 import Profile from "./pages/profile.tsx";
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { createRoot } from "react-dom/client";
 
 export default function App(): React.ReactElement {
   return (

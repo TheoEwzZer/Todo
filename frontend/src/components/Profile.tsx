@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import { EditIcon } from "@chakra-ui/icons";
 import {
   Button,
   Card,
@@ -12,7 +12,7 @@ import {
   InputGroup,
   useToast,
 } from "@chakra-ui/react";
-import { EditIcon } from "@chakra-ui/icons";
+import React, { ChangeEvent, useEffect, useState } from "react";
 
 export default function Profile(): React.ReactElement {
   const [isEditingEmail, setIsEditingEmail] = useState(false);
