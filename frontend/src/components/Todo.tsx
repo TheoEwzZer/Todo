@@ -436,7 +436,7 @@ function AddTodo(): React.ReactElement {
       headers: { token: token },
     });
     const data: any = await response.json();
-    if (response.status !== 201) {
+    if (response.status !== 200) {
       setErrorMessage(data.detail);
       setTitle("");
       setDescription("");
