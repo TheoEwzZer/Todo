@@ -277,7 +277,7 @@ async def update_user(id: str, body: Dict) -> Dict[str, str]:
     password_bytes: bytes = password.encode(encoding="utf-8")
     salt: bytes = bcrypt.gensalt()
     hashed_password: bytes = bcrypt.hashpw(password=password_bytes, salt=salt)
-    values: Tuple[str, str, str, str, str] = (
+    values: Tuple[str, bytes, str, str, str] = (
         body["email"], hashed_password, body["name"], body["firstname"], id)
     cursor.execute(query, values)
     db.commit()
@@ -323,8 +323,7 @@ async def update_user_email(id: str, body: Dict) -> Dict[str, str]:
     if not validate_email(email=body["email"]):
         raise HTTPException(
             status_code=400, detail="Invalid email address. Please correct and try again")
-    values: Tuple[str] = (
-        body["email"], id)
+    values: Tuple[Any, str] = (body["email"], id)
     cursor.execute(query, values)
     db.commit()
     query = "SELECT * FROM user WHERE id = %s"
@@ -450,7 +449,7 @@ async def check_token() -> Dict[str, str]:
 
 
 @app.get(path="/users", tags=["users"], status_code=200, dependencies=[Depends(dependency=decode_jwt)])
-async def view_user(email: Optional[str] = Depends(dependency=get_email_from_token)) -> str:
+async def view_user(email: Optional[str] = Depends(dependency=get_email_from_token)) -> Dict[str, str]:
     """
     View user details.
 
