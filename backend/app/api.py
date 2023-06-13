@@ -2,7 +2,6 @@
 This file contains the API endpoints for the todo list application.
 """
 
-from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 import bcrypt
