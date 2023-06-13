@@ -14,7 +14,6 @@ The module uses the following global variables:
 """
 
 import os
-import time
 from typing import Any, Dict, Optional
 
 import jwt
@@ -41,7 +40,7 @@ def encode_jwt(email: str) -> Dict[str, str]:
         "email": email
     }
     token: str = jwt.encode(payload=payload, key=JWT_SECRET_KEY,
-                       algorithm=JWT_ALGORITHM)
+                            algorithm=JWT_ALGORITHM)
     return {"token": token}
 
 
